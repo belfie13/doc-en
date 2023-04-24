@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+ <sect1 xml:id="language.oop5.properties" xmlns="http://docbook.org/ns/docbook">
+  <title>Readonly classes</title>
+  <para>
+   As of PHP 8.2.0, a class can be declared with the <literal>readonly</literal> modifier, which implicitly marks all of its properties as <link linkend="language.oop5.properties.readonly-properties">readonly</link>.
+  </para>
+  <note>
+   <simpara>
+    Furthermore, it will prevent the creation of dynamic properties.
+   </simpara>
+  </note>
+
+  <para>
+   <example>
+    <title>Readonly class affects property access</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+readonly class Foo
+{
+    public int $bar;
+
+    public function __construct() {
+        $this->bar = 1;
+    }
+}
+
+$foo = new Foo();
+$foo->bar = 2;
+// Fatal Error: Uncaught Error: Cannot modify readonly property Foo::$bar
+
+$foo->baz = 1;
+// Fatal Error: Uncaught Error: Cannot create dynamic property Foo::$baz
+
+?>
+]]>
+    </programlisting>   
+   </example>
+  </para>
+
+  <para>
+   <example>
+    <title>Marking readonly classes with the `#[AllowDynamicProperties]` attribute (which makes it possible to create dynamic properties without triggering errors) is a compile-time error</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+#[AllowDynamicProperties]
+readonly class Foo {
+}
+
+// Fatal error: Cannot apply #[AllowDynamicProperties] to readonly class Foo
+
+?>
+]]>
+    </programlisting>   
+   </example>
+  </para>
+
+<sect2 xml:id="language.oop5.readonly-classes.restrictions">
+ <title>Restrictions</title>
+  <para>
+   <example>
+    <title>Readonly classes cannot declare properties that are untyped or static</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+readonly class Foo
+{
+    public $bar;
+}
+
+// Fatal error: Readonly property Foo::$bar must have type
+
+readonly class Foo
+{
+    public static int $bar;
+}
+
+// Fatal error: Readonly class Foo cannot declare static properties
+
+?>
+]]>
+    </programlisting>   
+   </example>
+  </para>
+  </sect2>
+
+  <sect2 xml:id="language.oop5.properties.readonly-properties">
+   <title>Inheritance</title>
+<para>
+    </para>
+  <para>
+   <example>
+    <title>A readonly class can only extend a readonly parent</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+readonly class A {}
+readonly class B extends A {} // valid
+
+?>
+]]>
+    </programlisting>   
+   </example>
+  </para>
+
+  <para>
+   <example>
+    <title>But both of the following are illegal</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+readonly class A {}
+class B extends A {}
+// Fatal error: Non-readonly class B cannot extend readonly class A
+
+class A {}
+readonly class B extends A {}
+// Fatal error: Readonly class B cannot extend non-readonly class A
+
+?>
+]]>
+    </programlisting>   
+   </example>
+  </para>
+  </sect2>
